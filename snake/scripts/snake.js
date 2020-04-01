@@ -30,6 +30,20 @@ const OppositeDirection = {
     right: Direction.left,
 }
 
+const Rotation = {
+    up: 0,
+    down: 180,
+    left: 270,
+    right: 90,
+}
+
+const Assets = {
+    head: loadImage("/snake/assets/head.jpg"),
+    tail: loadImage("/snake/assets/tail.jpg"),
+    body: loadImage("/snake/assets/body.jpg"),
+    corner: loadImage("/snake/assets/corner.jpg"),
+}
+
 class Cell {
     constructor(x, y) {
         this._x = x;
@@ -114,7 +128,6 @@ class Grid {
     getAdjacent(cell, dir) {
         const x = cell.gridX + dir.x;
         const y = cell.gridY + dir.y;
-        console.log("(" + x + ", " + y + ")")
         if (x < 0 || x >= this._cellWidth || y < 0 || y >= this._cellHeight) {
             return null;
         }
@@ -151,11 +164,63 @@ class Snake {
     }
 
     draw(context) {
-        context.fillStyle = "#00FF00";
-        this._body.forEach(cell => {
-            context.fillRect(cell.x, cell.y, cellSize, cellSize);
+        this._body.forEach((cell, i) => {
+            const x = cell.x;
+            const y = cell.y;
+            let angle = 0;
+            let image = null;
+            if (i === 0) {
+                image = Assets.head;
+                angle = Rotation[this._direction.id];
+                drawRotatedImage(context, angle, x, y, image);
+                return;
+            }
+
+            const prevCellX = this._body[i - 1].gridX;
+            const prevCellY = this._body[i - 1].gridY;
+
+            if (i === (this._body.length - 1)) {
+                image = Assets.tail;
+                if (prevCellX < cell.gridX) {
+                    angle = 270;
+                } else if (prevCellX > cell.gridX) {
+                    angle = 90;
+                } else if (prevCellY < cell.gridY) {
+                    angle = 0;
+                } else if (prevCellY > cell.gridY) {
+                    angle = 180;
+                }
+                drawRotatedImage(context, angle, x, y, image);
+                return;
+            }
+
+            // Determine if its a corner or body piece
+            const nextCellX = this._body[i + 1].gridX;
+            const nextCellY = this._body[i + 1].gridY;
+
+            if (prevCellX === nextCellX) {
+                image = Assets.body; 
+                angle = 0;
+            } else if (prevCellY === nextCellY) {
+                image = Assets.body;
+                angle = 90;
+            } else {
+                image = Assets.corner;
+                // Determine rotation of corner
+                if (prevCellX < nextCellX && prevCellY > nextCellY) {
+                    angle = (prevCellX !== cell.gridX) ? 180 : 0;
+                } else if (prevCellX < nextCellX && prevCellY < nextCellY) {
+                    angle = (prevCellX !== cell.gridX) ? 90 : 270;
+                } else if (prevCellX > nextCellX && prevCellY < nextCellY) {
+                    angle = (prevCellX !== cell.gridX) ? 0 : 180;
+                } else if (prevCellX > nextCellX && prevCellY > nextCellY) {
+                    angle = (prevCellX !== cell.gridX) ? 270 : 90;
+                }
+            }
+            drawRotatedImage(context, angle, x, y, image);
         })
     }
+
 
     updatePosition(grid) {
         this._validateDirection();
@@ -210,9 +275,21 @@ $(document).ready(() => {
     updateGame();
 });
 
+function getRandomRange(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
+
+function loadImage(src) {
+    const image = new Image();
+    image.src = src;
+    return image;
+}
+
 function initializeGame() {
     grid = new Grid(width, height, cellSize);
-    snake = new Snake([grid.getCell(19, 19)]);
+    snake = new Snake([grid.getCell(19, 19), 
+                       grid.getCell(19, 20),
+                       grid.getCell(19, 21)]);
     lastTime = (new Date()).getTime();
     fps = 3;
     addApple(grid);
@@ -246,5 +323,13 @@ function updateGame() {
         context.clearRect(0, 0, width, height);
         grid.draw(context);
     }
+}
+
+function drawRotatedImage(context, angle, x, y, image) {
+    context.save();
+    context.translate(x + image.width / 2,  y + image.height / 2);
+    context.rotate(angle * Math.PI / 180);
+    context.drawImage(image, -image.width / 2, -image.height / 2);
+    context.restore();
 }
 
