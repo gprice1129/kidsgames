@@ -3,11 +3,18 @@
 const width = 800;
 const height = 600;
 const cellSize = 20;
-let fps = 1;
+let fps = 3;
 let context = null;
 let grid = null;
 let snake = null;
 let lastTime = 0;
+
+const KeyCodes = {
+    38: "up",
+    40: "down",
+    37: "left",
+    39: "right",
+}
 
 const Direction = {
     up: {x: 0, y: -1, id: "up"},
@@ -21,13 +28,6 @@ const OppositeDirection = {
     down: Direction.up,
     left: Direction.right,
     right: Direction.left,
-}
-
-const KeyDirection = {
-    "w": Direction.up,
-    "a": Direction.left,
-    "s": Direction.down,
-    "d": Direction.right,
 }
 
 class Cell {
@@ -84,6 +84,8 @@ class Grid {
         this._cellSize = cellSize;
         this._cellWidth = this._width / this._cellSize;
         this._cellHeight = this._height / this._cellSize;
+        console.log(this._cellWidth);
+        console.log(this._cellHeight);
         this._grid = [];
         for (let y = 0; y < this._cellHeight; ++y) {
             let row = [];
@@ -112,7 +114,8 @@ class Grid {
     getAdjacent(cell, dir) {
         const x = cell.gridX + dir.x;
         const y = cell.gridY + dir.y;
-        if (x < 0 || x >= this.cellWidth || y < 0 || y >= this.cellHeight) {
+        console.log("(" + x + ", " + y + ")")
+        if (x < 0 || x >= this._cellWidth || y < 0 || y >= this._cellHeight) {
             return null;
         }
 
@@ -164,7 +167,7 @@ class Snake {
         } 
 
         if (newHead.item !== null) {
-            fps += 1
+            fps += 0.5
             addApple(grid);
         } else {
             const tail = this._body.pop()
@@ -211,14 +214,14 @@ function initializeGame() {
     grid = new Grid(width, height, cellSize);
     snake = new Snake([grid.getCell(19, 19)]);
     lastTime = (new Date()).getTime();
-    fps = 1;
+    fps = 3;
     addApple(grid);
 }
 
 function handleInput(event) {
-    if (event.key in KeyDirection) {
+    if (event.keyCode in KeyCodes) {
         event.preventDefault();
-        snake.direction = KeyDirection[event.key];
+        snake.direction = Direction[KeyCodes[event.keyCode]];
     }
 }
 
