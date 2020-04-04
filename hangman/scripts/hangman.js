@@ -1,8 +1,8 @@
 'use strict';
 
-import { Canvas } from "/common/canvas.js";
-import { Grid } from "/common/grid.js";
-import { Rect } from "/common/drawable.js";
+import { Canvas } from "../../common/canvas.js";
+import { Grid } from "../../common/grid.js";
+import { Rect } from "../../common/drawable.js";
 
 const words = ["dog", "cat"];
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
