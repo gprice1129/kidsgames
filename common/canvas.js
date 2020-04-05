@@ -1,6 +1,6 @@
 'use strict'
 
-import { EventManager } from "/common/eventManager.js";
+import { EventManager } from "./eventManager.js";
 
 export class Canvas extends EventManager {
     constructor(canvas, width, height, drawables) {

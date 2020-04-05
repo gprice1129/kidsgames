@@ -1,6 +1,6 @@
 'use strict'
 
-import { Drawable } from "/common/drawable.js";
+import { Drawable } from "./drawable.js";
 
 export class Cell {
     constructor(x, y, item) {
