@@ -14,6 +14,12 @@ export class Cell {
     get item() { return this._item; }
     set item(item) { this._item = item; }
 
+    reset() {
+        if (!this.isEmpty()) {
+            this._item.reset();
+        }
+    }
+
     isEmpty() {
         return null === this._item;
     }
@@ -54,6 +60,10 @@ export class Grid extends Drawable {
             }
             this._grid.push(row);
         }
+    }
+
+    reset() {
+        this._grid.forEach(row => { row.forEach(cell => { cell.reset(); }); });
     }
 
     getCell(x, y) {

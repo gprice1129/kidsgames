@@ -12,6 +12,11 @@ export class Canvas extends EventManager {
         this._drawables = drawables;
     }
 
+    reset() {
+        super.reset();
+        this._drawables = [];
+    }
+
     get context() { return this._context; }
     get width() { return this._width; }
     get height() { return this._height; }
@@ -25,6 +30,7 @@ export class Canvas extends EventManager {
     }
 
     draw() {
+        this._context.clearRect(0, 0, this.width, this.height);
         Object.values(this._drawables).forEach(drawable => {
             drawable.draw(this._context);
         });

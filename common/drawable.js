@@ -24,7 +24,7 @@ export class Drawable {
     get rotation() { return this._rotation; }
     set rotation(angle) { this._rotation = angle; }
 
-    draw(context) {
+    draw(context, options) {
         console.error("Must define draw function");
     }
 }
