@@ -38,10 +38,10 @@ const Rotation = {
 }
 
 const Assets = {
-    head: loadImage("/snake/assets/head.jpg"),
-    tail: loadImage("/snake/assets/tail.jpg"),
-    body: loadImage("/snake/assets/body.jpg"),
-    corner: loadImage("/snake/assets/corner.jpg"),
+    head: loadImage("assets/head.jpg"),
+    tail: loadImage("assets/tail.jpg"),
+    body: loadImage("assets/body.jpg"),
+    corner: loadImage("assets/corner.jpg"),
 }
 
 class Cell {

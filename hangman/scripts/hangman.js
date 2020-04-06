@@ -13,10 +13,17 @@ let answer = "";
 let tries = 5;
 let guesses = [];
 
+let Assets = {
+    check: loadImage("assets/check.png"),
+    cross: loadImage("assets/cross.png"),
+}
+
 class BorderedText extends Rect {
     static States = {
         Inactive: 0,
-        Active: 1
+        Active: 1,
+        Correct: 2,
+        Wrong: 3
     }
 
     constructor(text, font) {
@@ -24,18 +31,29 @@ class BorderedText extends Rect {
         this._state = BorderedText.States.Inactive;
         this._text = text;
         this._font = font;
+        this._image = null;
     }
 
     get state() { return this._state; }
-    set state(newState) { this._state = newState; }
+    set state(newState) { 
+        if (this._state !== BorderedText.States.Correct &&
+            this._state !== BorderedText.States.Wrong) {
+                this._state = newState;
+        }
+    }
+    get text() { return this._text; }
 
     draw(context) {
+        this.color = "black";
         switch (this.state) {
-        case BorderedText.States.Inactive:
-            this.color = "black";
-            break;
         case BorderedText.States.Active:
             this.color = "blue";
+            break;
+        case BorderedText.States.Correct:
+            this._image = Assets.check;
+            break;
+        case BorderedText.States.Wrong:
+            this._image = Assets.cross;
             break;
         }
 
@@ -45,7 +63,15 @@ class BorderedText extends Rect {
         context.font = this._font;
         context.textAlign = "center";
         context.fillStyle = this.color;
-        context.fillText(this._text, x, y); 
+        context.fillText(this._text, x, y);
+        if (this._image !== null) {
+            let width = this.width / 1.2;
+            let height = this.height / 1.2;
+            let offsetX = (this.width - width) / 2;
+            let offsetY = (this.height - height) / 2;
+            context.fillStyle = 'rgba(0,0,0,0)';
+            context.drawImage(this._image, this.x + offsetX, this.y + offsetY, width, height);
+        }
     }
 }
 
@@ -59,32 +85,32 @@ class AlphabetPanel extends Grid {
 
     draw(context) {
         super.draw(context);
-        if (this._activeCell !== null) this._activeCell.item.draw(context);
+        if (this._activeCell !== null) this._activeCell.draw(context);
     }
 
     process(event) {
+        let cell = null;
         switch (event.type) {
         case "mousemove":
-            let x = event.offsetX;
-            let y = event.offsetY;
-            if (this._contains(x, y)) {
-                let cell = this.getCellFromPixelCoordinates(x, y);
-                if (cell === this._activeCell) return;
+            cell = this._getNewActiveCell(event.offsetX, event.offsetY);
+            if (cell === this._activeCell) return;
 
-                if (this._activeCell !== null) {
-                    this._activeCell.item.state = BorderedText.States.Inactive;
-                }
-
-                if (cell.item === null) {
-                    this._activeCell = null;
-                    return;
-                }
-
+            this._setActiveCellState(BorderedText.States.Inactive);
+            if (cell !== null) {
                 this._activeCell = cell;
-                this._activeCell.item.state = BorderedText.States.Active;
-            } else if (this._activeCell !== null) {
-                this._activeCell.item.state = BorderedText.States.Inactive;
+                this._setActiveCellState(BorderedText.States.Active);
+            } else {
                 this._activeCell = null;
+            }
+            break;
+
+        case "mousedown":
+            cell = this._getNewActiveCell(event.offsetX, event.offsetY);
+            console.log(cell);
+            if (cell !== null && !cell.isEmpty()) {
+                const guess = cell.item.text;
+                const state = updateGameState(guess);
+                cell.item.state = state;
             }
             break;
         }
@@ -96,29 +122,44 @@ class AlphabetPanel extends Grid {
         return x > this.x && x < this.x + this._pxWidth &&
                y > this.y && y < this.y + this._pxHeight;
     }
+
+    _getNewActiveCell(x, y) {
+        if (this._contains(x, y)) {
+            return this.getCellFromPixelCoordinates(x, y);
+        }
+
+        return null;
+    }
+
+    _setActiveCellState(state) {
+        if (this._activeCell !== null && !this._activeCell.isEmpty()) {
+            this._activeCell.item.state = state;
+        }
+    }
 }
 
 $(document).ready(() => {
     canvas = new Canvas($("#canvas")[0], width, height, []);
     let alphabetPanel = new AlphabetPanel(600, 3);
+    answer = words[0].toUpperCase();
     canvas.add(alphabetPanel);
     canvas.registerEventHandler("mousemove", alphabetPanel);
+    canvas.registerEventHandler("mousedown", alphabetPanel);
     canvas.draw();
 });
 
 function updateGameState(guess) {
-    let currentMsg = ""
-    if (guesses.includes(guess)) {
-        currentMsg = "You already guessed that letter!";
-    } else {
-        guesses.push(guess);
+    console.log(guess);
+    console.log(answer);
+    if (guesses.includes(guess)) return;
 
-        if (!answer.includes(guess)) {
-            tries -= 1;
-        }
+    guesses.push(guess);
+
+    if (!answer.includes(guess)) {
+        tries -= 1;
+        return BorderedText.States.Wrong;
     }
-
-    return currentMsg;
+    return BorderedText.States.Correct;
 }
 
 function generateVisibleString(guesses, answer) {
@@ -129,4 +170,10 @@ function generateVisibleString(guesses, answer) {
     });
 
     return visible;
+}
+
+function loadImage(src) {
+    const image = new Image();
+    image.src = src;
+    return image;
 }

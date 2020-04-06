@@ -21,6 +21,12 @@ export class Cell {
     clear() {
         this._item = null;
     }
+
+    draw(context) {
+        if (this._item !== null) {
+            this._item.draw(context);
+        }
+    }
 }
 
 export class Grid extends Drawable {
