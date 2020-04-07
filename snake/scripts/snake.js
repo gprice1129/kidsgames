@@ -38,10 +38,12 @@ const Rotation = {
 }
 
 const Assets = {
-    head: loadImage("assets/head.jpg"),
-    tail: loadImage("assets/tail.jpg"),
-    body: loadImage("assets/body.jpg"),
-    corner: loadImage("assets/corner.jpg"),
+    head: loadImage("assets/head.png"),
+    tail: loadImage("assets/tail.png"),
+    body: loadImage("assets/body.png"),
+    corner: loadImage("assets/corner.png"),
+    ball: loadImage("assets/ball.png"),
+    bg: loadImage("assets/bg.jpeg"),
 }
 
 class Cell {
@@ -98,8 +100,6 @@ class Grid {
         this._cellSize = cellSize;
         this._cellWidth = this._width / this._cellSize;
         this._cellHeight = this._height / this._cellSize;
-        console.log(this._cellWidth);
-        console.log(this._cellHeight);
         this._grid = [];
         for (let y = 0; y < this._cellHeight; ++y) {
             let row = [];
@@ -263,8 +263,7 @@ class Apple {
     }
 
     draw(context) {
-        context.fillStyle = "#FF0000";
-        context.fillRect(this._cell.x, this._cell.y, cellSize, cellSize);
+        context.drawImage(Assets.ball, this._cell.x, this._cell.y, cellSize, cellSize);
     }
 }
 
@@ -321,6 +320,7 @@ function updateGame() {
             initializeGame();
         }
         context.clearRect(0, 0, width, height);
+        context.drawImage(Assets.bg, 0, 0);
         grid.draw(context);
     }
 }
